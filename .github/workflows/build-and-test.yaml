@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore ConferenceManager.sln
+
+    - name: Build solution
+      run: dotnet build ConferenceManager.sln --no-restore --configuration Release
+      
+    - name: Install ABP CLI
+      run: dotnet tool install -g Volo.Abp.Cli
+
+    - name: Add .dotnet tools to PATH
+      run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+    - name: Install ABP libs
+      run: abp install-libs
+      working-directory: src/ConferenceManager.Web
+
+    - name: Run tests
+      run: dotnet test ConferenceManager.sln --no-build --verbosity normal --configuration Release
