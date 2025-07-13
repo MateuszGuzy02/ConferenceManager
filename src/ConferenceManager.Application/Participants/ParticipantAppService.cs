@@ -7,28 +7,31 @@ using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.ObjectMapping;
 
 namespace ConferenceManager.Participants
 {
     public class ParticipantAppService : ApplicationService, IParticipantAppService
     {
         private readonly IRepository<Participant, Guid> _repository;
+        private readonly IObjectMapper _objectMapper;
 
-        public ParticipantAppService(IRepository<Participant, Guid> repository)
+        public ParticipantAppService(IRepository<Participant, Guid> repository, IObjectMapper objectMapper)
         {
             _repository = repository;
+            _objectMapper = objectMapper;
         }
 
         public async Task<List<ParticipantDto>> GetListAsync()
         {
             var participants = await _repository.GetListAsync();
-            return ObjectMapper.Map<List<Participant>, List<ParticipantDto>>(participants);
+            return _objectMapper.Map<List<Participant>, List<ParticipantDto>>(participants);
         }
 
         public async Task<ParticipantDto> GetAsync(Guid id)
         {
             var participant = await _repository.GetAsync(id);
-            return ObjectMapper.Map<Participant, ParticipantDto>(participant);
+            return _objectMapper.Map<Participant, ParticipantDto>(participant);
         }
 
         public async Task<ParticipantDto> CreateAsync(CreateParticipantDto input)
@@ -37,9 +40,9 @@ namespace ConferenceManager.Participants
             if (exists)
                 throw new UserFriendlyException($"A participant with email {input.Email} already exists.");
 
-            var participant = ObjectMapper.Map<CreateParticipantDto, Participant>(input);
+            var participant = _objectMapper.Map<CreateParticipantDto, Participant>(input);
             await _repository.InsertAsync(participant);
-            return ObjectMapper.Map<Participant, ParticipantDto>(participant);
+            return _objectMapper.Map<Participant, ParticipantDto>(participant);
         }
 
         public async Task<ParticipantDto> UpdateAsync(Guid id, UpdateParticipantDto input)
@@ -53,9 +56,9 @@ namespace ConferenceManager.Participants
                     throw new UserFriendlyException($"A participant with email {input.Email} already exists.");
             }
 
-            ObjectMapper.Map(input, participant);
+            _objectMapper.Map(input, participant);
             await _repository.UpdateAsync(participant);
-            return ObjectMapper.Map<Participant, ParticipantDto>(participant);
+            return _objectMapper.Map<Participant, ParticipantDto>(participant);
         }
 
         public async Task DeleteAsync(Guid id)
