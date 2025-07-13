@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ConferenceManager.Participants;
+using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
@@ -52,6 +54,7 @@ public class ConferenceManagerDbContext :
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
     #endregion
+    public DbSet<Participant> Participants { get; set; }
 
     public ConferenceManagerDbContext(DbContextOptions<ConferenceManagerDbContext> options)
         : base(options)
@@ -76,11 +79,11 @@ public class ConferenceManagerDbContext :
 
         /* Configure your own tables/entities inside here */
 
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(ConferenceManagerConsts.DbTablePrefix + "YourEntities", ConferenceManagerConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
+        builder.Entity<Participant>(b =>
+        {
+            b.ToTable(ConferenceManagerConsts.DbTablePrefix + "Participants", ConferenceManagerConsts.DbSchema);
+            b.ConfigureByConvention(); //auto configure for the base class props
+            b.HasIndex(p => p.Email).IsUnique();
+        });
     }
 }
